@@ -69,23 +69,22 @@ class User {
         JOIN AuthMethod am ON am.UserId = u.Id
       WHERE Username = 'ariq' OR Email = ?`,
       [username, email]);
-    if (users.length == 0)
-      throw new Error('Username or email does not match with given password');
+    if (users.length == 0) return false;
+
     const tempUser = users[0];
     const checkPassword = await bcrypt.compare(password, tempUser.hashedPassword);
     const user = new User(tempUser);
-    if (!checkPassword)
-      throw new Error('Username or email does not match with given password');
+    if (!checkPassword) return false;
 
     // Create the JWT payload
     const payload = {
-      userId: user.Id,
-      username: user.Username,
-      email: user.Email
+      userId: user.id,
+      username: user.username,
+      email: user.email
     };
 
     // Generate the token using your secret key and set an expiration time
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign({ user: payload }, process.env.JWT_SECRET, {
       expiresIn: '1h' // Set the token expiration time
     });
 
