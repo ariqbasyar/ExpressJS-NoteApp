@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
 })
 .post('/', async (req, res, next) => {
   const { title, content } = req.body;
-  const insertedNote = await Note.create(title, content, req.user);
+  const insertedNote = await Note.create(req.user, title, content);
   return res.json(insertedNote);
 });
 
