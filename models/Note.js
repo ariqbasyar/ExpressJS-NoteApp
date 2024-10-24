@@ -10,8 +10,10 @@ class Note {
   }
 
   // Get all notes from the database
-  static async getAll() {
-    const [rows] = await db.query('SELECT * FROM Note');
+  static async getAll(user) {
+    const [rows] = await db.query(
+      'SELECT * FROM Note WHERE UserId = ?',
+      [user.id]);
     return rows.map(row => new Note(row.Id, row.Title, row.Content)); // Map rows to Note instances
   }
 
@@ -26,9 +28,11 @@ class Note {
   }
 
   // Create a new note in the database
-  static async create(title, content) {
+  static async create(title, content, user) {
     const id = uuidv4();
-    const [result] = await db.query('INSERT INTO Note (Id, Title, Content) VALUES (?, ?, ?)', [id, title, content]);
+    const [result] = await db.query(
+      'INSERT INTO Note (Id, UserId, Title, Content) VALUES (?, ?, ?, ?)',
+      [id, user.id, title, content]);
     return new Note(id, title, content);  // Return a Note instance
   }
 

@@ -59,16 +59,29 @@ class User {
   }
 
   static async loginWithPassword(username, email, password) {
-    const [users] = await db.query(
-      `SELECT
-        u.Id as id,
-        u.Username as username,
-        u.Email as email,
-        am.HashedPassword as hashedPassword
-      FROM User u
-        JOIN AuthMethod am ON am.UserId = u.Id
-      WHERE Username = 'ariq' OR Email = ?`,
-      [username, email]);
+    var users = [];
+    if (username !== null)
+      [users] = await db.query(
+        `SELECT
+          u.Id as id,
+          u.Username as username,
+          u.Email as email,
+          am.HashedPassword as hashedPassword
+        FROM User u
+          JOIN AuthMethod am ON am.UserId = u.Id
+        WHERE Username = ?`,
+        [username]);
+    else
+      [users] = await db.query(
+        `SELECT
+          u.Id as id,
+          u.Username as username,
+          u.Email as email,
+          am.HashedPassword as hashedPassword
+        FROM User u
+          JOIN AuthMethod am ON am.UserId = u.Id
+        WHERE Email = ?`,
+        [email]);
     if (users.length == 0) return false;
 
     const tempUser = users[0];
@@ -78,7 +91,7 @@ class User {
 
     // Create the JWT payload
     const payload = {
-      userId: user.id,
+      id: user.id,
       username: user.username,
       email: user.email
     };
