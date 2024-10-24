@@ -7,6 +7,7 @@ const loginRoutes = require('./api/login')
 const registerRoutes = require('./api/register')
 const noteRoutes = require('./api/notes');
 const errorHandler = require('./middleware/errorHandler');
+const verifyJWT = require('./middleware/verifyJWT');
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -21,7 +22,7 @@ app.use(express.json());
 app.use('/', homeRoutes)
 app.use('/api/login', loginRoutes)
 app.use('/api/register', registerRoutes)
-app.use('/api/notes', noteRoutes)
+app.use('/api/notes', verifyJWT, noteRoutes)
 
 // Middleware to handle errors
 app.use(errorHandler);
