@@ -1,7 +1,8 @@
-const { v4 } = require("uuid");
-const db = require("../db/db");
+const { v4 } = require('uuid');
+const db = require('../db/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { UnauthorizedError, BadRequestError } = require('../errors/errors');
 
 class User {
   constructor(user) {
@@ -12,10 +13,11 @@ class User {
 
   static async register(username, email, authType, password) {
     try {
+      authType ||= 'password';
       if (authType === 'password') {
         return await this.createWithPassword(username, email, password);
       }
-      throw new Error(`this authType (${authType}) has not been implemented`);
+      throw new UnauthorizedError(`this authType (${authType}) has not been implemented`);
     } catch (err) {
       throw err
     }
@@ -28,7 +30,7 @@ class User {
         'INSERT INTO User (Id, Username, Email) VALUES (?, ?, ?)',
         [userId, username, email]);
     } catch (err) {
-      throw new Error(err.sqlMessage);
+      throw new UnauthorizedError(err.sqlMessage);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -37,22 +39,24 @@ class User {
     try {
       const [authMethodResult] = await db.query(
         'INSERT INTO AuthMethod (Id, UserId, AuthType, HashedPassword) VALUES (?, ?, ?, ?)',
-        [authMethodId, userId, "password", hashedPassword]);
+        [authMethodId, userId, 'password', hashedPassword]);
     } catch (err) {
       // delete the user if failed to insert to AuthMethod table
       const [deleteUserResult] = await db.query(
         'DELETE FROM User WHERE Id = ?',
         [userId]);
-      throw new Error(err.sqlMessage);
+      throw new UnauthorizedError(err.sqlMessage);
     }
+    return new User({ id: userId, username, email });
   }
 
   static async login(username, email, authType, password) {
     try {
+      authType ||= 'password';
       if (authType === 'password') {
         return await this.loginWithPassword(username, email, password);
       }
-      throw new Error(`this authType (${authType}) has not been implemented`);
+      throw new UnauthorizedError(`this authType (${authType}) has not been implemented`);
     } catch (err) {
       throw err
     }
@@ -85,6 +89,7 @@ class User {
     if (users.length == 0) return false;
 
     const tempUser = users[0];
+    if (!password || password.trim().length === 0) return false;
     const checkPassword = await bcrypt.compare(password, tempUser.hashedPassword);
     const user = new User(tempUser);
     if (!checkPassword) return false;
@@ -103,6 +108,17 @@ class User {
 
     // Return the user and the token
     return { user, token };
+  }
+
+  static async deleteByUsername(username) {
+    try {
+      const [result] = await db.query('DELETE FROM User WHERE Username = ?', [username]);
+      if (result.affectedRows === 0)
+        throw new BadRequestError('User not found');
+      return result.affectedRows;
+    } catch (err) {
+      throw err;
+    }
   }
 }
 
