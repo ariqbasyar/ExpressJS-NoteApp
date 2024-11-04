@@ -5,9 +5,49 @@
     "description": "API for managing notes",
     "version": "1.0.0"
   },
+  "tags": [
+    {
+      "name": "User",
+      "description": "Operations related to user accounts"
+    },
+    {
+      "name": "Notes",
+      "description": "Operations related to notes"
+    }
+  ],
   "paths": {
+    "/api/login": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Login",
+        "description": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/notes": {
       "get": {
+        "tags": ["Notes"],
         "summary": "Get all notes",
         "description": "Retrieve a list of all notes",
         "security": [
@@ -41,10 +81,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Note"
-                  }
+                  "$ref": "#/components/schemas/PaginatedNotes"
                 }
               }
             }
@@ -52,6 +89,7 @@
         }
       },
       "post": {
+        "tags": ["Notes"],
         "summary": "Create a new note",
         "description": "Create a new note",
         "security": [
@@ -104,6 +142,68 @@
           },
           "content": {
             "type": "string"
+          }
+        }
+      },
+      "PaginatedNotes": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Note"
+            }
+          },
+          "pageNumber": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "totalItem": {
+            "type": "integer"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "authType": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
           }
         }
       }
