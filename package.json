@@ -9,6 +9,7 @@
     "mysql2": "^3.11.3",
     "redis": "^4.7.0",
     "supertest": "^7.0.0",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^10.0.0",
     "vitest": "^2.1.4"
   },

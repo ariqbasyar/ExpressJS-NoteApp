@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require("./swagger.json");
 
 // Importing all the routes
 const homeRoutes = require('./routes/home')
@@ -23,6 +25,14 @@ app.use('/', homeRoutes)
 app.use('/api/login', loginRoutes)
 app.use('/api/register', registerRoutes)
 app.use('/api/notes', verifyJWT, noteRoutes)
+
+// // Serve swagger.json
+// app.get("/swagger.json", (req, res) => {
+//   res.sendFile(path.join(__dirname, "swagger.json"));
+// });
+
+// Serve Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Middleware to handle errors
 app.use(errorHandler);
